@@ -4,7 +4,7 @@ using System.Net;
 using Lykke.Service.ClientProfileRule.Core.Services;
 using Lykke.Service.ClientProfileRule.Models;
 using Microsoft.AspNetCore.Mvc;
-using Swashbuckle.SwaggerGen.Annotations;
+using Swashbuckle.AspNetCore.SwaggerGen;
 
 namespace Lykke.Service.ClientProfileRule.Controllers
 {
