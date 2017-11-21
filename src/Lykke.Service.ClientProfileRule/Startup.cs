@@ -19,6 +19,7 @@ using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Swashbuckle.AspNetCore.Swagger;
 
 namespace Lykke.Service.ClientProfileRule
 {
@@ -52,7 +53,17 @@ namespace Lykke.Service.ClientProfileRule
 
                 services.AddSwaggerGen(options =>
                 {
-                    options.DefaultLykkeConfiguration("v1", "ClientProfileRule API");
+                    options.SwaggerDoc(
+                        "v1",
+                        new Info
+                        {
+                            Version = "v1",
+                            Title = "Client Profile Rule Service API"
+                        });
+
+                    options.DescribeAllEnumsAsStrings();
+                    options.EnableXmsEnumExtension();
+                    options.EnableXmlDocumentation();
                 });
 
                 Mapper.Initialize(m =>
@@ -137,7 +148,7 @@ namespace Lykke.Service.ClientProfileRule
 
                 await ApplicationContainer.Resolve<IStartupManager>().StartAsync();
 
-                await Log.WriteMonitorAsync("", "", "Started");
+                await Log.WriteMonitorAsync("", $"Env: {Program.EnvInfo}", "Started");
             }
             catch (Exception ex)
             {
@@ -172,7 +183,7 @@ namespace Lykke.Service.ClientProfileRule
                 
                 if (Log != null)
                 {
-                    await Log.WriteMonitorAsync("", "", "Terminating");
+                    await Log.WriteMonitorAsync("", $"Env: {Program.EnvInfo}", "Terminating");
                 }
                 
                 ApplicationContainer.Dispose();
