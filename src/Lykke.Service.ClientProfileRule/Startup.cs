@@ -9,6 +9,7 @@ using Lykke.Common.ApiLibrary.Middleware;
 using Lykke.Common.ApiLibrary.Swagger;
 using Lykke.Logs;
 using Lykke.Service.ClientProfileRule.Core.Services;
+using Lykke.Service.ClientProfileRule.Middleware;
 using Lykke.Service.ClientProfileRule.Settings;
 using Lykke.SettingsReader;
 using Lykke.SlackNotification.AzureQueue;
@@ -108,6 +109,7 @@ namespace Lykke.Service.ClientProfileRule
                 {
                     Message = "Technical problem"
                 });
+                app.UseMiddleware<ErrorHandlerMiddleware>("ClientProfileRule");
 
                 app.UseMvc();
                 app.UseSwagger();

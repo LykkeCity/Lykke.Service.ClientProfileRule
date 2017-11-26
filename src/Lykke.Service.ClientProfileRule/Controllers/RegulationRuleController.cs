@@ -20,6 +20,10 @@ namespace Lykke.Service.ClientProfileRule.Controllers
             _regulationRuleService = regulationRuleService;
         }
 
+        /// <summary>
+        /// Returns all regulation rules.
+        /// </summary>
+        /// <response code="200">The collection of regulation rules.</response>
         [HttpGet]
         [SwaggerOperation("RegulationRuleGetAll")]
         [ProducesResponseType(typeof(IEnumerable<RegulationRuleModel>), (int)HttpStatusCode.OK)]
@@ -32,10 +36,17 @@ namespace Lykke.Service.ClientProfileRule.Controllers
             return Ok(model);
         }
 
+        /// <summary>
+        /// Returns a regulation rule by specified regulation id.
+        /// </summary>
+        /// <param name="regulationId">The regulation id.</param>
+        /// <response code="200">The regulation rule.</response>
+        /// <response code="404">Regulation rule not found exist.</response>
         [HttpGet]
         [Route("{regulationId}")]
         [SwaggerOperation("RegulationRuleGetByRegulationId")]
         [ProducesResponseType(typeof(RegulationRuleModel), (int)HttpStatusCode.OK)]
+        [ProducesResponseType(typeof(ErrorResponse), (int)HttpStatusCode.NotFound)]
         public async Task<IActionResult> GetByRegulationId(string regulationId)
         {
             RegulationRule regulationRule = await _regulationRuleService.GetByRegulationIdAsync(regulationId);
@@ -45,9 +56,17 @@ namespace Lykke.Service.ClientProfileRule.Controllers
             return Ok(model);
         }
 
+        /// <summary>
+        /// Adds regulation rules.
+        /// </summary>
+        /// <response code="204">Regulation successfully added.</response>
+        /// <response code="400">Invalid model what describe a regulation.</response>
+        /// <response code="409">Regulation rule already exist.</response>
         [HttpPost]
         [SwaggerOperation("RegulationRuleAdd")]
-        [ProducesResponseType(typeof(RegulationRuleModel), (int)HttpStatusCode.NoContent)]
+        [ProducesResponseType((int)HttpStatusCode.NoContent)]
+        [ProducesResponseType(typeof(ErrorResponse), (int)HttpStatusCode.Conflict)]
+        [ProducesResponseType(typeof(ErrorResponse), (int)HttpStatusCode.BadRequest)]
         public async Task<IActionResult> Add([FromBody] NewRegulationRuleModel model)
         {
             if (!ModelState.IsValid)
@@ -62,10 +81,15 @@ namespace Lykke.Service.ClientProfileRule.Controllers
             return NoContent();
         }
 
+        /// <summary>
+        /// Deletes the regulation rule by specified id.
+        /// </summary>
+        /// <param name="regulationId">The regulation id.</param>
+        /// <response code="204">Regulation rule successfully deleted.</response>
         [HttpDelete]
         [Route("{regulationId}")]
         [SwaggerOperation("RegulationRuleDelete")]
-        [ProducesResponseType(typeof(RegulationRuleModel), (int)HttpStatusCode.NoContent)]
+        [ProducesResponseType((int)HttpStatusCode.NoContent)]
         public async Task<IActionResult> Delete(string regulationId)
         {
             await _regulationRuleService.DeleteAsync(regulationId);

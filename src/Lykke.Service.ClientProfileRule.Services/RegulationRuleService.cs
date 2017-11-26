@@ -18,23 +18,33 @@ namespace Lykke.Service.ClientProfileRule.Services
             _kycService = kycService;
         }
 
-        public Task<IEnumerable<RegulationRule>> GetAllAsync()
+        public async Task<IEnumerable<RegulationRule>> GetAllAsync()
         {
-            return _regulationRuleRepository.GetAllAsync();
+            return await _regulationRuleRepository.GetAllAsync();
         }
-        public Task<RegulationRule> GetByRegulationIdAsync(string regulationId)
+        public async Task<RegulationRule> GetByRegulationIdAsync(string regulationId)
         {
-            return _regulationRuleRepository.GetByRegulationIdAsync(regulationId);
+            RegulationRule regulationRule = await _regulationRuleRepository.GetByRegulationIdAsync(regulationId);
+
+            if (regulationRule == null)
+            {
+                throw new RegulationRuleNotFoundException("Regulation rule not found.")
+                {
+                    RegulationId = regulationId
+                };
+            }
+
+            return regulationRule;
         }
 
-        public Task AddAsync(RegulationRule regulationRule)
+        public async Task AddAsync(RegulationRule regulationRule)
         {
-            return _regulationRuleRepository.InsertAsync(regulationRule);
+            await _regulationRuleRepository.InsertAsync(regulationRule);
         }
 
-        public Task DeleteAsync(string regulationId)
+        public async Task DeleteAsync(string regulationId)
         {
-            return _regulationRuleRepository.DeleteAsync(regulationId);
+            await _regulationRuleRepository.DeleteAsync(regulationId);
         }
 
         public async Task UpplyAsync(ClientRegulations clientRegulations)
@@ -46,7 +56,7 @@ namespace Lykke.Service.ClientProfileRule.Services
 
                 if (regulationRule == null)
                 {
-                    throw new RegulationRuleNotFoundException
+                    throw new RegulationRuleNotFoundException("Regulation rule not found.")
                     {
                         RegulationId = regulationId
                     };
