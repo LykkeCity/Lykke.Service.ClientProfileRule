@@ -48,8 +48,13 @@ namespace Lykke.Service.ClientProfileRule.Controllers
         [HttpPost]
         [SwaggerOperation("RegulationRuleAdd")]
         [ProducesResponseType(typeof(RegulationRuleModel), (int)HttpStatusCode.NoContent)]
-        public async Task<IActionResult> Add([FromBody] RegulationRuleModel model)
+        public async Task<IActionResult> Add([FromBody] NewRegulationRuleModel model)
         {
+            if (!ModelState.IsValid)
+            {
+                return BadRequest(ErrorResponse.Create("Invalid model.", ModelState));
+            }
+
             RegulationRule regulationRule = Mapper.Map<RegulationRule>(model);
 
             await _regulationRuleService.AddAsync(regulationRule);

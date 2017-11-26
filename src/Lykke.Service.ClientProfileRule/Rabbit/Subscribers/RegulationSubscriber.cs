@@ -9,8 +9,8 @@ using Lykke.RabbitMqBroker.Subscriber;
 using Lykke.Service.ClientProfileRule.Core.Domain;
 using Lykke.Service.ClientProfileRule.Core.Exceptions;
 using Lykke.Service.ClientProfileRule.Core.Services;
-using Lykke.Service.ClientProfileRule.Core.Settings.ServiceSettings;
 using Lykke.Service.ClientProfileRule.Rabbit.Messages.Incoming;
+using Lykke.Service.ClientProfileRule.Settings.ServiceSettings.Rabbit;
 
 namespace Lykke.Service.ClientProfileRule.Rabbit.Subscribers
 {

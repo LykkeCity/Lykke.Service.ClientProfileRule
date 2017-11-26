@@ -4,15 +4,12 @@ using Autofac;
 using Autofac.Extensions.DependencyInjection;
 using AutoMapper;
 using AzureStorage.Tables;
-using Common;
 using Common.Log;
 using Lykke.Common.ApiLibrary.Middleware;
 using Lykke.Common.ApiLibrary.Swagger;
 using Lykke.Logs;
-using Lykke.Service.ClientProfileRule.Clients;
 using Lykke.Service.ClientProfileRule.Core.Services;
-using Lykke.Service.ClientProfileRule.Core.Settings;
-using Lykke.Service.ClientProfileRule.Rabbit.Subscribers;
+using Lykke.Service.ClientProfileRule.Settings;
 using Lykke.SettingsReader;
 using Lykke.SlackNotification.AzureQueue;
 using Microsoft.AspNetCore.Builder;
@@ -77,25 +74,14 @@ namespace Lykke.Service.ClientProfileRule
                 var appSettings = Configuration.LoadSettings<AppSettings>();
                 Log = CreateLogWithSlack(services, appSettings);
 
-                builder.RegisterModule(new Services.AutofacModule());
-                builder.RegisterModule(new AzureRepositories.AutofacModule(
-                    appSettings.Nested(x => x.ClientProfileRuleService.Db.DataConnectionString), Log));
-                
-                builder.Register(c => new KycService())
-                    .As<IKycService>();
-
-                builder.RegisterType<RegulationSubscriber>()
-                    .AsSelf()
-                    .As<IStartable>()
-                    .As<IStopable>()
-                    .AutoActivate()
-                    .SingleInstance()
-                    .WithParameter(TypedParameter.From(appSettings.CurrentValue.ClientProfileRuleService.RabbitMq
-                        .RegulationQueue));
-
                 builder.RegisterInstance(Log)
                     .As<ILog>()
                     .SingleInstance();
+
+                builder.RegisterModule(new AutofacModule(appSettings, Log));
+                builder.RegisterModule(new Services.AutofacModule());
+                builder.RegisterModule(new AzureRepositories.AutofacModule(
+                    appSettings.Nested(x => x.ClientProfileRuleService.Db.DataConnectionString), Log));
 
                 builder.Populate(services);
                 ApplicationContainer = builder.Build();
@@ -118,7 +104,10 @@ namespace Lykke.Service.ClientProfileRule
                     app.UseDeveloperExceptionPage();
                 }
 
-                app.UseLykkeMiddleware("ClientProfileRule", ex => new {Message = "Technical problem"});
+                app.UseLykkeMiddleware("ClientProfileRule", ex => new
+                {
+                    Message = "Technical problem"
+                });
 
                 app.UseMvc();
                 app.UseSwagger();
@@ -180,12 +169,12 @@ namespace Lykke.Service.ClientProfileRule
             try
             {
                 // NOTE: Service can't recieve and process requests here, so you can destroy all resources
-                
+
                 if (Log != null)
                 {
                     await Log.WriteMonitorAsync("", $"Env: {Program.EnvInfo}", "Terminating");
                 }
-                
+
                 ApplicationContainer.Dispose();
             }
             catch (Exception ex)
@@ -207,23 +196,24 @@ namespace Lykke.Service.ClientProfileRule
             aggregateLogger.AddLog(consoleLogger);
 
             // Creating slack notification service, which logs own azure queue processing messages to aggregate log
-            var slackService = services.UseSlackNotificationsSenderViaAzureQueue(new AzureQueueIntegration.AzureQueueSettings
-            {
-                ConnectionString = settings.CurrentValue.SlackNotifications.AzureQueue.ConnectionString,
-                QueueName = settings.CurrentValue.SlackNotifications.AzureQueue.QueueName
-            }, aggregateLogger);
+            var slackService =
+                services.UseSlackNotificationsSenderViaAzureQueue(settings.CurrentValue.SlackNotifications.AzureQueue,
+                    aggregateLogger);
 
             var dbLogConnectionStringManager = settings.Nested(x => x.ClientProfileRuleService.Db.LogsConnectionString);
             var dbLogConnectionString = dbLogConnectionStringManager.CurrentValue;
 
             // Creating azure storage logger, which logs own messages to concole log
-            if (!string.IsNullOrEmpty(dbLogConnectionString) && !(dbLogConnectionString.StartsWith("${") && dbLogConnectionString.EndsWith("}")))
+            if (!string.IsNullOrEmpty(dbLogConnectionString) &&
+                !(dbLogConnectionString.StartsWith("${") && dbLogConnectionString.EndsWith("}")))
             {
                 var persistenceManager = new LykkeLogToAzureStoragePersistenceManager(
-                    AzureTableStorage<LogEntity>.Create(dbLogConnectionStringManager, "ClientProfileRuleLog", consoleLogger),
+                    AzureTableStorage<LogEntity>.Create(dbLogConnectionStringManager, "ClientProfileRuleLog",
+                        consoleLogger),
                     consoleLogger);
 
-                var slackNotificationsManager = new LykkeLogToAzureSlackNotificationsManager(slackService, consoleLogger);
+                var slackNotificationsManager =
+                    new LykkeLogToAzureSlackNotificationsManager(slackService, consoleLogger);
 
                 var azureStorageLogger = new LykkeLogToAzureStorage(
                     persistenceManager,

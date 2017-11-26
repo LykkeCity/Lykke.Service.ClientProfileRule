@@ -1,4 +1,4 @@
-﻿namespace Lykke.Service.ClientProfileRule.Core.Settings.ServiceSettings
+﻿namespace Lykke.Service.ClientProfileRule.Settings.ServiceSettings.Rabbit
 {
     public class RegulationQueue
     {
