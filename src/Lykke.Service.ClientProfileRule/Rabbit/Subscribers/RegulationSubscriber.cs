@@ -37,9 +37,7 @@ namespace Lykke.Service.ClientProfileRule.Rabbit.Subscribers
             settings.DeadLetterExchangeName = null;
 
             _subscriber = new RabbitMqSubscriber<ClientRegulationsMessage>(settings,
-                    new ResilientErrorHandlingStrategy(_log, settings,
-                        TimeSpan.FromSeconds(10),
-                        next: new DeadQueueErrorHandlingStrategy(_log, settings)))
+                    new ResilientErrorHandlingStrategy(_log, settings, TimeSpan.FromSeconds(10)))
                 .SetMessageDeserializer(new JsonMessageDeserializer<ClientRegulationsMessage>())
                 .SetMessageReadStrategy(new MessageReadQueueStrategy())
                 .Subscribe(ProcessMessageAsync)
