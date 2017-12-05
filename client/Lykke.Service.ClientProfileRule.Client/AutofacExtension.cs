@@ -6,15 +6,18 @@ namespace Lykke.Service.ClientProfileRule.Client
 {
     public static class AutofacExtension
     {
-        public static void RegisterClientProfileRuleClient(this ContainerBuilder builder, string serviceUrl, ILog log)
+        public static void RegisterClientProfileRuleClient(this ContainerBuilder builder, string serviceUrl)
         {
-            if (builder == null) throw new ArgumentNullException(nameof(builder));
-            if (serviceUrl == null) throw new ArgumentNullException(nameof(serviceUrl));
-            if (log == null) throw new ArgumentNullException(nameof(log));
+            if (builder == null)
+                throw new ArgumentNullException(nameof(builder));
+
+            if (serviceUrl == null)
+                throw new ArgumentNullException(nameof(serviceUrl));
+
             if (string.IsNullOrWhiteSpace(serviceUrl))
                 throw new ArgumentException("Value cannot be null or whitespace.", nameof(serviceUrl));
 
-            builder.RegisterInstance(new ClientProfileRuleClient(serviceUrl, log)).As<IClientProfileRuleClient>().SingleInstance();
+            builder.RegisterInstance(new ClientProfileRuleClient(serviceUrl)).As<IClientProfileRuleClient>().SingleInstance();
         }
     }
 }

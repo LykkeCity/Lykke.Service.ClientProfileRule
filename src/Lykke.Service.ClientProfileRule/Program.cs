@@ -7,6 +7,8 @@ namespace Lykke.Service.ClientProfileRule
 {
     public class Program
     {
+        public static string EnvInfo => Environment.GetEnvironmentVariable("ENV_INFO");
+
         public static void Main(string[] args)
         {
             Console.WriteLine($"ClientProfileRule version {Microsoft.Extensions.PlatformAbstractions.PlatformServices.Default.Application.ApplicationVersion}");
@@ -15,13 +17,12 @@ namespace Lykke.Service.ClientProfileRule
 #else
             Console.WriteLine("Is RELEASE");
 #endif           
-            Console.WriteLine($"ENV_INFO: {Environment.GetEnvironmentVariable("ENV_INFO")}");
+            Console.WriteLine($"ENV_INFO: {EnvInfo}");
 
             try
             {
                 var host = new WebHostBuilder()
                     .UseKestrel()
-                    .UseUrls("http://*:5000")
                     .UseContentRoot(Directory.GetCurrentDirectory())
                     .UseStartup<Startup>()
                     .UseApplicationInsights()
